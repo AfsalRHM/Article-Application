@@ -10,12 +10,6 @@ const instance = axios.create({
   },
 });
 
-// instance.interceptors.request.use((config: any) => {
-//   const token = localStorage.getItem("token");
-//   if (token) config.headers.Authorization = `Bearer ${token}`;
-//   return config;
-// });
-
 export const apiRequest = async (
   method: "get" | "post" | "put" | "patch" | "delete",
   url: string,
