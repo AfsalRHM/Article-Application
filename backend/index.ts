@@ -9,7 +9,7 @@ import { databaseConnection } from "./src/config/db";
 import articleRoute from "./src/routes/articleRoutes";
 import userRoute from "./src/routes/userRoutes";
 
-const app = express();
+const app = express(); 
 
 app.use(
   cors({
