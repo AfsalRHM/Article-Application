@@ -47,7 +47,7 @@
   ---
   
   ## 🗃️ Folder Structure
-  
+  ```
 Article-Application/
 ├── backend
 │   ├── .gitignore
@@ -133,7 +133,7 @@ Article-Application/
 │   ├── tsconfig.node.json
 │   ├── vercel.json
 │   └── vite.config.ts
-
+```
   
   
   ---
