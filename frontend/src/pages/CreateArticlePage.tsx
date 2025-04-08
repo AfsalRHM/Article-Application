@@ -386,12 +386,6 @@ const NewArticlePage = () => {
           <div className="flex justify-end space-x-4">
             <motion.button
               whileHover={{ scale: 1.05 }}
-              className="px-6 py-3 bg-white border border-purple-300 text-purple-600 rounded-lg hover:bg-purple-50"
-            >
-              Save Draft
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
               className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg flex items-center"
               onClick={handleSubmit(onSubmit)}
             >

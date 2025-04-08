@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { FiBookmark, FiClock, FiSearch, FiRefreshCw } from "react-icons/fi";
+import { FiClock, FiSearch, FiRefreshCw, FiInfo } from "react-icons/fi";
 import NavBar from "../components/shared/NavBar";
 import { getAllArticles } from "../api/articleRequest";
 import { useSelector } from "react-redux";
@@ -289,7 +289,7 @@ const HomePage: React.FC = () => {
                             })}
                           </div>
                           <div className="flex items-center">
-                            <FiBookmark className="cursor-pointer hover:text-purple-600" />
+                            <FiInfo className="cursor-pointer hover:text-purple-600" />
                           </div>
                         </div>
                       </div>
