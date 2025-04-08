@@ -170,7 +170,7 @@ Article-Application/
   
   ## Backend Setup
   ```
-  cd frontend
+  cd backend
   npm install
 ```
 
@@ -183,7 +183,7 @@ Article-Application/
 
   #### Start the frontend
 ```
-  npm run dev
+  npm start
 ```
   
   Happy coding! 🚀
