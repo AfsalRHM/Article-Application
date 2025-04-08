@@ -48,89 +48,92 @@
   
   ## 🗃️ Folder Structure
   
-  ├── backend
-    ├── .gitignore
-    ├── index.ts
-    ├── package-lock.json
-    ├── package.json
-    ├── src
-    │   ├── config
-    │   │   └── db.ts
-    │   ├── controllers
-    │   │   ├── articleController.ts
-    │   │   ├── authControllers.ts
-    │   │   └── userController.ts
-    │   ├── models
-    │   │   ├── articleModel.ts
-    │   │   └── userModel.ts
-    │   ├── routes
-    │   │   ├── articleRoutes.ts
-    │   │   ├── authRoutes.ts
-    │   │   └── userRoutes.ts
-    │   └── validators
-    │   │   ├── articleValidators.ts
-    │   │   └── userValidators.ts
-    └── tsconfig.json
-└── frontend
-    ├── .gitignore
-    ├── README.md
-    ├── eslint.config.js
-    ├── index.html
-    ├── package-lock.json
-    ├── package.json
-    ├── public
-        ├── article_logo.png
-        └── vite.svg
-    ├── src
-        ├── App.tsx
-        ├── api
-        │   ├── apiRequest.ts
-        │   ├── articleRequest.ts
-        │   ├── authRequest.ts
-        │   └── userRequest.ts
-        ├── assets
-        │   └── react.svg
-        ├── components
-        │   ├── auth-components
-        │   │   ├── LoginComponent.tsx
-        │   │   └── RegisterComponent.tsx
-        │   ├── dashboard-components
-        │   │   └── ArticlePage.tsx
-        │   ├── settings-components
-        │   │   ├── ArticleEditModal.tsx
-        │   │   ├── ArticleViewModal.tsx
-        │   │   ├── MyArticlesSettings.tsx
-        │   │   ├── PasswordSettings.tsx
-        │   │   ├── PreferencesSettings.tsx
-        │   │   └── ProfileSettings.tsx
-        │   └── shared
-        │   │   └── NavBar.tsx
-        ├── config
-        │   └── cloudinaryConfig.ts
-        ├── declarations.d.ts
-        ├── interface
-        │   ├── IarticleInterface.ts
-        │   └── IuserInterface.ts
-        ├── main.tsx
-        ├── pages
-        │   ├── AuthPage.tsx
-        │   ├── CreateArticlePage.tsx
-        │   ├── DashboardPage.tsx
-        │   └── SettingsPage.tsx
-        ├── redux
-        │   ├── slice
-        │   │   └── userSlice.ts
-        │   └── store.ts
-        ├── styles.css
-        ├── utils
-        │   ├── iziToastUtils.ts
-        │   └── userAuth.tsx
-        └── vite-env.d.ts
-    ├── tsconfig.app.json
-    ├── tsconfig.json
-    ├── tsconfig.node.json
-    ├── vercel.json
-    └── vite.config.ts
+Article-Application/
+├── backend
+│   ├── .gitignore
+│   ├── index.ts
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── src
+│       ├── config
+│       │   └── db.ts
+│       ├── controllers
+│       │   ├── articleController.ts
+│       │   ├── authControllers.ts
+│       │   └── userController.ts
+│       ├── models
+│       │   ├── articleModel.ts
+│       │   └── userModel.ts
+│       ├── routes
+│       │   ├── articleRoutes.ts
+│       │   ├── authRoutes.ts
+│       │   └── userRoutes.ts
+│       └── validators
+│           ├── articleValidators.ts
+│           └── userValidators.ts
+│
+├── frontend
+│   ├── .gitignore
+│   ├── README.md
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── public
+│   │   ├── article_logo.png
+│   │   └── vite.svg
+│   ├── src
+│   │   ├── App.tsx
+│   │   ├── api
+│   │   │   ├── apiRequest.ts
+│   │   │   ├── articleRequest.ts
+│   │   │   ├── authRequest.ts
+│   │   │   └── userRequest.ts
+│   │   ├── assets
+│   │   │   └── react.svg
+│   │   ├── components
+│   │   │   ├── auth-components
+│   │   │   │   ├── LoginComponent.tsx
+│   │   │   │   └── RegisterComponent.tsx
+│   │   │   ├── dashboard-components
+│   │   │   │   └── ArticlePage.tsx
+│   │   │   ├── settings-components
+│   │   │   │   ├── ArticleEditModal.tsx
+│   │   │   │   ├── ArticleViewModal.tsx
+│   │   │   │   ├── MyArticlesSettings.tsx
+│   │   │   │   ├── PasswordSettings.tsx
+│   │   │   │   ├── PreferencesSettings.tsx
+│   │   │   │   └── ProfileSettings.tsx
+│   │   │   └── shared
+│   │   │       └── NavBar.tsx
+│   │   ├── config
+│   │   │   └── cloudinaryConfig.ts
+│   │   ├── declarations.d.ts
+│   │   ├── interface
+│   │   │   ├── IarticleInterface.ts
+│   │   │   └── IuserInterface.ts
+│   │   ├── main.tsx
+│   │   ├── pages
+│   │   │   ├── AuthPage.tsx
+│   │   │   ├── CreateArticlePage.tsx
+│   │   │   ├── DashboardPage.tsx
+│   │   │   └── SettingsPage.tsx
+│   │   ├── redux
+│   │   │   ├── slice
+│   │   │   │   └── userSlice.ts
+│   │   │   └── store.ts
+│   │   ├── styles.css
+│   │   ├── utils
+│   │   │   ├── iziToastUtils.ts
+│   │   │   └── userAuth.tsx
+│   │   └── vite-env.d.ts
+│   ├── tsconfig.app.json
+│   ├── tsconfig.json
+│   ├── tsconfig.node.json
+│   ├── vercel.json
+│   └── vite.config.ts
+
   
   
   ---
