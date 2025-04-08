@@ -10,14 +10,6 @@
   
   ---
   
-  ## 📁 Repository
-  
-  This is the main repository for the fullstack project.
-  
-  - GitHub: [AfsalRHM/Article-Application](https://github.com/AfsalRHM/Article-Application)
-  
-  ---
-  
   ## 🚀 Features
   
   - ✅ User Signup with category preferences
