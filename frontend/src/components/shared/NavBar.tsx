@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiLogOut, FiPlusCircle, FiSearch, FiSettings } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { removeData } from "../../redux/slice/userSlice";
+import { useDispatch } from "react-redux";
 
 type navbarType = {
   setSearchTerm?: React.Dispatch<React.SetStateAction<string>>;
@@ -10,6 +12,13 @@ type navbarType = {
 
 const NavBar = ({ setSearchTerm, searchTerm }: navbarType) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(removeData());
+    navigate("/auth/login");
+  };
 
   return (
     <nav className="sticky top-0 z-10 bg-white border-b border-purple-200 shadow-sm">
@@ -76,26 +85,35 @@ const NavBar = ({ setSearchTerm, searchTerm }: navbarType) => {
                 <span className="font-medium text-sm">JD</span>
               </div>
 
-              {/* Dropdown on small screens */}
+              {/* Dropdown - available on all screens */}
               <AnimatePresence>
                 {dropdownOpen && (
                   <motion.div
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -5 }}
-                    className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg p-2 flex flex-col gap-2 md:hidden z-50"
+                    className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg p-2 flex flex-col gap-2 z-50"
                   >
-                    <Link to="/new-article">
-                      <button className="flex items-center gap-2 px-2 py-1 hover:bg-purple-200 rounded">
-                        <FiPlusCircle className="text-purple-600" /> New Article
-                      </button>
-                    </Link>
-                    <Link to="/settings">
-                      <button className="flex items-center gap-2 px-2 py-1 hover:bg-purple-200 rounded">
-                        <FiSettings className="text-purple-600" /> Settings
-                      </button>
-                    </Link>
-                    <button className="flex items-center gap-2 px-2 py-1 hover:bg-red-200 rounded">
+                    {/* Extra options only on small screens */}
+                    <div className="md:hidden flex flex-col gap-2">
+                      <Link to="/new-article">
+                        <button className="flex items-center gap-2 px-2 py-1 hover:bg-purple-200 rounded">
+                          <FiPlusCircle className="text-purple-600" /> New
+                          Article
+                        </button>
+                      </Link>
+                      <Link to="/settings">
+                        <button className="flex items-center gap-2 px-2 py-1 hover:bg-purple-200 rounded">
+                          <FiSettings className="text-purple-600" /> Settings
+                        </button>
+                      </Link>
+                    </div>
+
+                    {/* Log Out - shown always */}
+                    <button
+                      className="flex items-center gap-2 px-2 py-1 hover:bg-red-200 rounded"
+                      onClick={handleLogout}
+                    >
                       <FiLogOut className="text-red-600" /> Log Out
                     </button>
                   </motion.div>
