@@ -140,30 +140,52 @@ Article-Application/
   
   ## 🛠️ Setup & Installation
   
-  ### 📦 Clone the Repo
+  ### Clone the Repo
   
   ```bash
   git clone https://github.com/AfsalRHM/Article-Application.git
+```
+
+  ### Enter in to the cloned application
+  ```
   cd Article-Application
-  
-  ## Frontend Setup
+```
+
+  ### Frontend Setup
+  ```
   cd frontend
   npm install
+```
 
-  VITE_API_BASE_URL = 
-  VITE_CLOUDINARY_URL =
+#### Configure the ENV
+```
+  VITE_API_BASE_URL = "add the backend url eg:'http://localhost:3000'"
+  VITE_CLOUDINARY_URL = "add the cloudinary url"
+```
 
+#### Start the frontend
+```
   npm run dev
+```
   
   ## Backend Setup
-  cd backend
+  ```
+  cd frontend
   npm install
-  npm start
-  
-  
-  Let me know if you want:
-  - A **split README** for client and server folders
-  - A **deployment guide** for Vercel/Render
-  - Or a **setup video/guide** for `.env` and MongoDB
+```
+
+#### Configure the ENV
+```
+  PORT = "Enter the port you are running"
+  MONGO_URI = "add the mongo URI"
+  FRONTEND_URL = "add yout frontedn url eg:'http://localhost:5173'"
+```
+
+  #### Start the frontend
+```
+  npm run dev
+```
   
   Happy coding! 🚀
+
+If there has any problem you encountered while experiencing the application. Raise an error. Thank You! 
