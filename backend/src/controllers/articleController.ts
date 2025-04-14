@@ -6,16 +6,6 @@ import User from "../models/userModel";
 
 import * as yup from "yup";
 
-type userDataType = {
-  first_name: string;
-  last_name: string;
-  phone_number: string;
-  email: string;
-  dob: string;
-  password: string;
-  preferences: string[];
-};
-
 export const createArticle = async (req: Request, res: Response) => {
   try {
     await articleValidation.validate(req.body, { abortEarly: false });

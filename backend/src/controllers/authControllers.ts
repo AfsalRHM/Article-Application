@@ -8,6 +8,11 @@ import * as yup from "yup";
 import User from "../models/userModel";
 
 import bcrypt from "bcryptjs";
+import {
+  checkMailDuplicate,
+  findUser,
+  insertUser,
+} from "../service/authService";
 
 type userDataType = {
   first_name: string;
@@ -33,7 +38,7 @@ export const userRegister = async (req: Request, res: Response) => {
       articlePreferences,
     } = req.body;
 
-    const emailExists = await User.findOne({ email: email });
+    const emailExists = await checkMailDuplicate({ email: email });
 
     if (emailExists) {
       res
@@ -43,7 +48,7 @@ export const userRegister = async (req: Request, res: Response) => {
     } else {
       const encryptedPassword = bcrypt.hashSync(password, 10);
 
-      const userData = await User.insertOne({
+      const userData = await insertUser({
         first_name: firstName,
         last_name: lastName,
         email,
@@ -83,9 +88,9 @@ export const userLogin = async (req: Request, res: Response) => {
 
     const { identifier, password } = req.body;
 
-    const existingUser: userDataType | null = await User.findOne({
-      $or: [{ email: identifier }, { phone_number: identifier }],
-    }).lean();
+    const existingUser: userDataType | null | undefined = await findUser({
+      identifier,
+    });
 
     if (!existingUser) {
       res.status(404).json({ message: "Invalid Credential" });
