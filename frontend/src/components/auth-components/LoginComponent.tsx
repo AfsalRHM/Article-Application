@@ -7,6 +7,7 @@ import { userLogin } from "../../api/authRequest";
 import { assignData } from "../../redux/slice/userSlice";
 import { useDispatch } from "react-redux";
 import { showSuccessToast } from "../../utils/iziToastUtils";
+import InputField from "../common/InputField";
 
 type LoginFormData = {
   identifier: string;
@@ -74,7 +75,7 @@ const LoginComponent = ({ setIsLogin }: LoginComponentType) => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setLoginMethod("email")}
-          className={`px-4 py-2 rounded-md flex items-center ${
+          className={`px-4 py-2 rounded-md flex items-center hover:cursor-pointer ${
             loginMethod === "email"
               ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
               : "bg-gray-100 text-gray-700"
@@ -86,7 +87,7 @@ const LoginComponent = ({ setIsLogin }: LoginComponentType) => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setLoginMethod("phone")}
-          className={`px-4 py-2 rounded-md flex items-center ${
+          className={`px-4 py-2 rounded-md flex items-center hover:cursor-pointer ${
             loginMethod === "phone"
               ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
               : "bg-gray-100 text-gray-700"
@@ -108,30 +109,25 @@ const LoginComponent = ({ setIsLogin }: LoginComponentType) => {
 
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
         <div>
-          <label
-            htmlFor="identifier"
-            className="flex items-center text-sm font-medium text-blue-700"
-          >
-            {loginMethod === "email" ? (
-              <>
-                <FiMail className="mr-2 text-blue-500" /> Email address
-              </>
-            ) : (
-              <>
-                <FiPhone className="mr-2 text-green-500" /> Phone number
-              </>
-            )}
-          </label>
           <div className="mt-1">
-            <input
+            <InputField
               id="identifier"
               type={loginMethod === "email" ? "email" : "number"}
+              label={loginMethod === "email" ? "Email address" : "Phone number"}
+              icon={
+                loginMethod === "email" ? (
+                  <FiMail className="text-blue-500" />
+                ) : (
+                  <FiPhone className="text-green-500" />
+                )
+              }
               placeholder={
                 loginMethod === "email"
                   ? "you@example.com"
                   : "10-digit phone number"
               }
-              {...register("identifier", {
+              error={errors.identifier}
+              register={register("identifier", {
                 required: `${
                   loginMethod === "email" ? "Email" : "Phone number"
                 } is required`,
@@ -146,11 +142,14 @@ const LoginComponent = ({ setIsLogin }: LoginComponentType) => {
                         message: "Please enter a valid 10-digit phone number",
                       },
               })}
-              className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-300 focus:outline-none focus:ring-2 ${
+              borderColor={
                 loginMethod === "email"
                   ? "border-blue-200 focus:ring-blue-500 focus:border-blue-500"
                   : "border-green-200 focus:ring-green-500 focus:border-green-500"
-              }`}
+              }
+              labelColor={
+                loginMethod === "email" ? "text-blue-700" : "text-green-700"
+              }
             />
             {errors.identifier && (
               <p className="mt-1 text-sm text-red-600">
@@ -161,20 +160,19 @@ const LoginComponent = ({ setIsLogin }: LoginComponentType) => {
         </div>
 
         <div>
-          <label
-            htmlFor="password"
-            className="flex items-center text-sm font-medium text-red-700"
-          >
-            <FiLock className="mr-2 text-red-500" /> Password
-          </label>
           <div className="mt-1">
-            <input
+            <InputField
               id="password"
               type="password"
-              {...register("password", {
+              label="Password"
+              icon={<FiLock className="text-red-500" />}
+              placeholder="••••••••"
+              error={errors.password}
+              register={register("password", {
                 required: "Password is required",
               })}
-              className="appearance-none block w-full px-3 py-2 border border-red-200 rounded-md shadow-sm placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500"
+              borderColor="border-red-200 focus:ring-red-500 focus:border-red-500"
+              labelColor="text-red-700"
             />
             {errors.password && (
               <p className="mt-1 text-sm text-red-600">
