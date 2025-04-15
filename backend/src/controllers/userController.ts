@@ -3,6 +3,7 @@ import User from "../models/userModel";
 import Article from "../models/articleModel";
 
 import bcrypt from "bcryptjs";
+import { StatusCode } from "../constants/statusCodes";
 
 export const blockArticleForUser = async (req: Request, res: Response) => {
   try {
@@ -10,20 +11,20 @@ export const blockArticleForUser = async (req: Request, res: Response) => {
 
     if (!userId || !articleId) {
       res
-        .status(400)
+        .status(StatusCode.BAD_REQUEST)
         .json({ message: "Invalid or missing user id or article id" });
       return;
     }
 
     const article = await Article.findById(articleId);
     if (!article) {
-      res.status(404).json({ message: "Article not found" });
+      res.status(StatusCode.NOT_FOUND).json({ message: "Article not found" });
       return;
     }
 
     const user = await User.findById(userId);
     if (!user) {
-      res.status(404).json({ message: "User not found" });
+      res.status(StatusCode.NOT_FOUND).json({ message: "User not found" });
       return;
     }
 
@@ -37,13 +38,15 @@ export const blockArticleForUser = async (req: Request, res: Response) => {
 
     const { password, ...fileteredUserData } = userData!.toObject();
 
-    res.status(200).json({
+    res.status(StatusCode.OK).json({
       message: "Article Blocker for the User",
       data: fileteredUserData,
     });
   } catch (error: any) {
     console.error("Error in blockArticleForUser controller:", error.message);
-    res.status(500).json({ message: "Server Error! Try later." });
+    res
+      .status(StatusCode.INTERNAL_SERVER_ERROR)
+      .json({ message: "Server Error! Try later." });
   }
 };
 
@@ -52,25 +55,29 @@ export const getUserData = async (req: Request, res: Response) => {
     const { userId } = req.body;
 
     if (!userId) {
-      res.status(400).json({ message: "Invalid or missing user id" });
+      res
+        .status(StatusCode.BAD_REQUEST)
+        .json({ message: "Invalid or missing user id" });
       return;
     }
 
     const userData = await User.findById(userId);
     if (!userData) {
-      res.status(404).json({ message: "User not found" });
+      res.status(StatusCode.NOT_FOUND).json({ message: "User not found" });
       return;
     }
 
     const { password, ...fileteredUserData } = userData!.toObject();
 
-    res.status(200).json({
+    res.status(StatusCode.OK).json({
       message: "User Data Fetched Successfully",
       data: fileteredUserData,
     });
   } catch (error: any) {
     console.error("Error in getUserData controller:", error.message);
-    res.status(500).json({ message: "Server Error! Try later." });
+    res
+      .status(StatusCode.INTERNAL_SERVER_ERROR)
+      .json({ message: "Server Error! Try later." });
   }
 };
 
@@ -79,13 +86,15 @@ export const updateUserProfileData = async (req: Request, res: Response) => {
     const { userId, data } = req.body;
 
     if (!userId) {
-      res.status(400).json({ message: "Invalid or missing user id" });
+      res
+        .status(StatusCode.BAD_REQUEST)
+        .json({ message: "Invalid or missing user id" });
       return;
     }
 
     const userData = await User.findById(userId);
     if (!userData) {
-      res.status(404).json({ message: "User not found" });
+      res.status(StatusCode.NOT_FOUND).json({ message: "User not found" });
       return;
     }
 
@@ -99,13 +108,15 @@ export const updateUserProfileData = async (req: Request, res: Response) => {
 
     const { password, ...fileteredUserData } = userData!.toObject();
 
-    res.status(200).json({
+    res.status(StatusCode.OK).json({
       message: "User Data Updated Successfully",
       data: fileteredUserData,
     });
   } catch (error: any) {
     console.error("Error in updateUserProfileData controller:", error.message);
-    res.status(500).json({ message: "Server Error! Try later." });
+    res
+      .status(StatusCode.INTERNAL_SERVER_ERROR)
+      .json({ message: "Server Error! Try later." });
   }
 };
 
@@ -114,13 +125,15 @@ export const updateUserPasswordData = async (req: Request, res: Response) => {
     const { userId, data } = req.body;
 
     if (!userId) {
-      res.status(400).json({ message: "Invalid or missing user id" });
+      res
+        .status(StatusCode.BAD_REQUEST)
+        .json({ message: "Invalid or missing user id" });
       return;
     }
 
     const userData = await User.findById(userId);
     if (!userData) {
-      res.status(404).json({ message: "User not found" });
+      res.status(StatusCode.NOT_FOUND).json({ message: "User not found" });
       return;
     }
 
@@ -130,7 +143,7 @@ export const updateUserPasswordData = async (req: Request, res: Response) => {
     );
 
     if (!passwordMatch) {
-      res.status(401).json({
+      res.status(StatusCode.UNAUTHORIZED).json({
         message: "Incorrect Current Password",
       });
       return;
@@ -144,13 +157,15 @@ export const updateUserPasswordData = async (req: Request, res: Response) => {
 
     const { password, ...fileteredUserData } = userData!.toObject();
 
-    res.status(200).json({
+    res.status(StatusCode.OK).json({
       message: "User Data Updated Successfully",
       data: fileteredUserData,
     });
   } catch (error: any) {
     console.error("Error in updateUserPasswordData controller:", error.message);
-    res.status(500).json({ message: "Server Error! Try later." });
+    res
+      .status(StatusCode.INTERNAL_SERVER_ERROR)
+      .json({ message: "Server Error! Try later." });
   }
 };
 
@@ -159,13 +174,15 @@ export const updateUserPreferenceData = async (req: Request, res: Response) => {
     const { userId, selectedCategories } = req.body;
 
     if (!userId) {
-      res.status(400).json({ message: "Invalid or missing user id" });
+      res
+        .status(StatusCode.BAD_REQUEST)
+        .json({ message: "Invalid or missing user id" });
       return;
     }
 
     const userData = await User.findById(userId);
     if (!userData) {
-      res.status(404).json({ message: "User not found" });
+      res.status(StatusCode.NOT_FOUND).json({ message: "User not found" });
       return;
     }
 
@@ -175,12 +192,17 @@ export const updateUserPreferenceData = async (req: Request, res: Response) => {
 
     const { password, ...fileteredUserData } = userData!.toObject();
 
-    res.status(200).json({
+    res.status(StatusCode.OK).json({
       message: "User Preference Updated Successfully",
       data: fileteredUserData,
     });
   } catch (error: any) {
-    console.error("Error in updateUserPreferenceData controller:", error.message);
-    res.status(500).json({ message: "Server Error! Try later." });
+    console.error(
+      "Error in updateUserPreferenceData controller:",
+      error.message
+    );
+    res
+      .status(StatusCode.INTERNAL_SERVER_ERROR)
+      .json({ message: "Server Error! Try later." });
   }
 };

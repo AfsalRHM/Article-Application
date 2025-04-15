@@ -5,6 +5,7 @@ import Article from "../models/articleModel";
 import User from "../models/userModel";
 
 import * as yup from "yup";
+import { StatusCode } from "../constants/statusCodes";
 
 export const createArticle = async (req: Request, res: Response) => {
   try {
@@ -22,14 +23,14 @@ export const createArticle = async (req: Request, res: Response) => {
     });
 
     if (articleData) {
-      res.status(200).json({
+      res.status(StatusCode.OK).json({
         status: true,
         message: "Article Created Succesfully",
         data: articleData,
       });
     } else {
       res
-        .status(501)
+        .status(StatusCode.INTERNAL_SERVER_ERROR)
         .json({ status: false, message: "Unable to Create Article" });
     }
   } catch (error: any) {
@@ -38,11 +39,13 @@ export const createArticle = async (req: Request, res: Response) => {
         path: err.path,
         message: err.message,
       }));
-      res.status(400).json({ errors });
+      res.status(StatusCode.BAD_REQUEST).json({ errors });
       return;
     }
     console.log(error.message, "error on the createArticle controller");
-    res.status(400).json({ message: "error while validate" });
+    res
+      .status(StatusCode.BAD_REQUEST)
+      .json({ message: "error while validate" });
   }
 };
 
@@ -51,13 +54,15 @@ export const getArticlesByPreference = async (req: Request, res: Response) => {
     const { userId, userPreference } = req.body;
 
     if (userPreference.length === 0) {
-      res.status(400).json({ message: "Invalid or missing preferences" });
+      res
+        .status(StatusCode.BAD_REQUEST)
+        .json({ message: "Invalid or missing preferences" });
       return;
     }
 
     const userData = await User.findById(userId);
     if (!userData) {
-      res.status(404).json({ message: "User not found" });
+      res.status(StatusCode.NOT_FOUND).json({ message: "User not found" });
       return;
     }
 
@@ -72,14 +77,16 @@ export const getArticlesByPreference = async (req: Request, res: Response) => {
       .populate("author");
 
     res
-      .status(200)
+      .status(StatusCode.OK)
       .json({ message: "The Request is successfull", data: articles });
   } catch (error: any) {
     console.log(
       error.message,
       "error on the getArticlesByPreference controller"
     );
-    res.status(400).json({ message: "Server Error! try later.." });
+    res
+      .status(StatusCode.BAD_REQUEST)
+      .json({ message: "Server Error! try later.." });
   }
 };
 
@@ -89,7 +96,7 @@ export const likeArticle = async (req: Request, res: Response) => {
 
     if (!userId || !articleId) {
       res
-        .status(400)
+        .status(StatusCode.BAD_REQUEST)
         .json({ message: "Invalid or missing user id or article id" });
       return;
     }
@@ -97,7 +104,7 @@ export const likeArticle = async (req: Request, res: Response) => {
     const article = await Article.findById(articleId);
 
     if (!article) {
-      res.status(404).json({ message: "Article not found" });
+      res.status(StatusCode.NOT_FOUND).json({ message: "Article not found" });
       return;
     }
 
@@ -119,13 +126,15 @@ export const likeArticle = async (req: Request, res: Response) => {
       );
     }
 
-    res.status(200).json({
+    res.status(StatusCode.OK).json({
       message: alreadyLiked ? "Article unliked" : "Article liked",
       data: updatedArticle,
     });
   } catch (error: any) {
     console.error("Error in likeArticle controller:", error.message);
-    res.status(500).json({ message: "Server Error! Try later." });
+    res
+      .status(StatusCode.INTERNAL_SERVER_ERROR)
+      .json({ message: "Server Error! Try later." });
   }
 };
 
@@ -135,7 +144,7 @@ export const disLikeArticle = async (req: Request, res: Response) => {
 
     if (!userId || !articleId) {
       res
-        .status(400)
+        .status(StatusCode.BAD_REQUEST)
         .json({ message: "Invalid or missing user id or article id" });
       return;
     }
@@ -143,7 +152,7 @@ export const disLikeArticle = async (req: Request, res: Response) => {
     const article = await Article.findById(articleId);
 
     if (!article) {
-      res.status(404).json({ message: "Article not found" });
+      res.status(StatusCode.NOT_FOUND).json({ message: "Article not found" });
       return;
     }
 
@@ -165,13 +174,15 @@ export const disLikeArticle = async (req: Request, res: Response) => {
       );
     }
 
-    res.status(200).json({
+    res.status(StatusCode.OK).json({
       message: alreadyDisLiked ? "Article disliked" : "Article unDisliked",
       data: updatedArticle,
     });
   } catch (error: any) {
     console.error("Error in disLikeArticle controller:", error.message);
-    res.status(500).json({ message: "Server Error! Try later." });
+    res
+      .status(StatusCode.INTERNAL_SERVER_ERROR)
+      .json({ message: "Server Error! Try later." });
   }
 };
 
@@ -180,19 +191,23 @@ export const getUserArticles = async (req: Request, res: Response) => {
     const { userId } = req.body;
 
     if (!userId) {
-      res.status(400).json({ message: "Invalid or missing user id" });
+      res
+        .status(StatusCode.BAD_REQUEST)
+        .json({ message: "Invalid or missing user id" });
       return;
     }
 
     const articleData = await Article.find({ author: userId });
 
-    res.status(200).json({
+    res.status(StatusCode.OK).json({
       message: "Article Data Fetched Successfully",
       data: articleData,
     });
   } catch (error: any) {
     console.error("Error in getUserArticles controller:", error.message);
-    res.status(500).json({ message: "Server Error! Try later." });
+    res
+      .status(StatusCode.INTERNAL_SERVER_ERROR)
+      .json({ message: "Server Error! Try later." });
   }
 };
 
@@ -214,21 +229,21 @@ export const editArticle = async (req: Request, res: Response) => {
     );
 
     if (!article) {
-      res.status(404).json({
+      res.status(StatusCode.NOT_FOUND).json({
         status: false,
         message: "Article not found or you're not authorized",
       });
       return;
     }
 
-    res.status(200).json({
+    res.status(StatusCode.OK).json({
       status: true,
       message: "Article updated successfully",
       data: article,
     });
   } catch (error: any) {
     console.log(error.message, "Error in editArticle controller");
-    res.status(500).json({
+    res.status(StatusCode.INTERNAL_SERVER_ERROR).json({
       status: false,
       message: "Something went wrong while updating the article",
     });
@@ -242,21 +257,21 @@ export const deleteArticle = async (req: Request, res: Response) => {
     const article = await Article.deleteOne({ _id: articleId });
 
     if (!article) {
-      res.status(404).json({
+      res.status(StatusCode.NOT_FOUND).json({
         status: false,
         message: "Article not found or you're not authorized",
       });
       return;
     }
 
-    res.status(200).json({
+    res.status(StatusCode.OK).json({
       status: true,
       message: "Article Deleted successfully",
       data: article,
     });
   } catch (error: any) {
     console.log(error.message, "Error in deleteArticle controller");
-    res.status(500).json({
+    res.status(StatusCode.INTERNAL_SERVER_ERROR).json({
       status: false,
       message: "Something went wrong while updating the article",
     });

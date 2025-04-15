@@ -5,7 +5,6 @@ import {
 } from "../validators/userValidators";
 
 import * as yup from "yup";
-import User from "../models/userModel";
 
 import bcrypt from "bcryptjs";
 import {
@@ -13,6 +12,7 @@ import {
   findUser,
   insertUser,
 } from "../service/authService";
+import { StatusCode } from "../constants/statusCodes";
 
 type userDataType = {
   first_name: string;
@@ -42,7 +42,7 @@ export const userRegister = async (req: Request, res: Response) => {
 
     if (emailExists) {
       res
-        .status(409)
+        .status(StatusCode.CONFLICT)
         .json({ status: true, message: "User with email already registered" });
       return;
     } else {
@@ -59,13 +59,13 @@ export const userRegister = async (req: Request, res: Response) => {
       });
 
       if (userData) {
-        res.status(200).json({
+        res.status(StatusCode.OK).json({
           status: true,
           message: "User Registered Successfully",
           data: userData,
         });
       } else {
-        res.status(200).json({ message: "Unable to Register User" });
+        res.status(StatusCode.OK).json({ message: "Unable to Register User" });
       }
     }
   } catch (error: any) {
@@ -74,11 +74,13 @@ export const userRegister = async (req: Request, res: Response) => {
         path: err.path,
         message: err.message,
       }));
-      res.status(400).json({ errors });
+      res.status(StatusCode.BAD_REQUEST).json({ errors });
       return;
     }
     console.log(error.message, "error on the userRegister controller");
-    res.status(400).json({ message: "error while validate" });
+    res
+      .status(StatusCode.BAD_REQUEST)
+      .json({ message: "error while validate" });
   }
 };
 
@@ -93,7 +95,7 @@ export const userLogin = async (req: Request, res: Response) => {
     });
 
     if (!existingUser) {
-      res.status(404).json({ message: "Invalid Credential" });
+      res.status(StatusCode.NOT_FOUND).json({ message: "Invalid Credential" });
     } else if (existingUser) {
       const passwordCompare = bcrypt.compareSync(
         password,
@@ -103,13 +105,15 @@ export const userLogin = async (req: Request, res: Response) => {
       if (passwordCompare) {
         const { password, ...userFilteredData } = existingUser;
 
-        res.status(200).json({
+        res.status(StatusCode.OK).json({
           status: true,
           message: "User Login Successfull",
           data: userFilteredData,
         });
       } else {
-        res.status(401).json({ message: "Invalid Credential" });
+        res
+          .status(StatusCode.UNAUTHORIZED)
+          .json({ message: "Invalid Credential" });
       }
     }
   } catch (error: any) {
@@ -118,10 +122,12 @@ export const userLogin = async (req: Request, res: Response) => {
         path: err.path,
         message: err.message,
       }));
-      res.status(400).json({ errors });
+      res.status(StatusCode.BAD_REQUEST).json({ errors });
       return;
     }
     console.log(error.message, "error on the userLogin controller");
-    res.status(400).json({ message: "error while validate" });
+    res
+      .status(StatusCode.BAD_REQUEST)
+      .json({ message: "error while validate" });
   }
 };
