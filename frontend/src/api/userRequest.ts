@@ -5,7 +5,7 @@ type getUserDataType = {
 };
 
 export const getUserData = (data: getUserDataType) => {
-  return apiRequest("post", "/user/get-user-data", data);
+  return apiRequest("get", `/users/${data.userId}`);
 };
 
 type updateUserProfileType = {
@@ -14,7 +14,7 @@ type updateUserProfileType = {
 };
 
 export const updateUserProfile = (data: updateUserProfileType) => {
-  return apiRequest("patch", "/user/update-user-profile-data", data);
+  return apiRequest("patch", `/users/${data.userId}/profile`, data);
 };
 
 type updateUserPasswordType = {
@@ -26,7 +26,7 @@ type updateUserPasswordType = {
 };
 
 export const updateUserPassword = (data: updateUserPasswordType) => {
-  return apiRequest("patch", "/user/update-user-password-data", data);
+  return apiRequest("patch", `/users/${data.userId}/password`, data);
 };
 
 type updateUserPreferenceType = {
@@ -35,5 +35,5 @@ type updateUserPreferenceType = {
 };
 
 export const updateUserPreference = (data: updateUserPreferenceType) => {
-  return apiRequest("patch", "/user/update-user-preference-data", data);
+  return apiRequest("patch", `/users/${data.userId}/preference`, data);
 };

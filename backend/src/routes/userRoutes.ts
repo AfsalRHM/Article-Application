@@ -3,11 +3,12 @@ import { blockArticleForUser, getUserData, updateUserPasswordData, updateUserPre
 
 const userRoute = express.Router();
 
-userRoute.post("/get-user-data", getUserData);
-userRoute.post("/block-article-user", blockArticleForUser);
+userRoute.get("/:userId", getUserData);
 
-userRoute.patch("/update-user-profile-data", updateUserProfileData);
-userRoute.patch("/update-user-password-data", updateUserPasswordData);
-userRoute.patch("/update-user-preference-data", updateUserPreferenceData);
+userRoute.post("/:userId/block-article", blockArticleForUser);
+
+userRoute.patch("/:userId/profile", updateUserProfileData);
+userRoute.patch("/:userId/password", updateUserPasswordData);
+userRoute.patch("/:userId/preference", updateUserPreferenceData);
 
 export default userRoute;

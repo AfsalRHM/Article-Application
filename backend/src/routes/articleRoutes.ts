@@ -3,12 +3,16 @@ import { createArticle, deleteArticle, disLikeArticle, editArticle, getArticlesB
 
 const articleRoute = express.Router();
 
-articleRoute.post("/create-article", createArticle);
-articleRoute.post("/get-articles", getArticlesByPreference);
-articleRoute.post("/like-article", likeArticle);
-articleRoute.post("/dis-like-article", disLikeArticle);
-articleRoute.post("/get-user-articles", getUserArticles);
-articleRoute.post("/edit-article", editArticle);
-articleRoute.delete("/delete-article", deleteArticle);
+articleRoute.get("/", getArticlesByPreference);
+articleRoute.get("/user/:userId", getUserArticles);
+
+articleRoute.post("/", createArticle);
+
+articleRoute.put("/:articleId", editArticle);
+
+articleRoute.patch("/:articleId/like", likeArticle);
+articleRoute.patch("/:articleId/dislike", disLikeArticle);
+
+articleRoute.delete("/:articleId", deleteArticle);
 
 export default articleRoute;

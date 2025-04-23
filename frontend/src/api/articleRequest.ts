@@ -2,7 +2,7 @@ import articleType from "../interface/IarticleInterface";
 import { apiRequest } from "./apiRequest";
 
 export const createArticle = (articleData: articleType) => {
-  return apiRequest("post", "/article/create-article", articleData);
+  return apiRequest("post", "/articles", articleData);
 };
 
 type getAllArticlesType = {
@@ -10,14 +10,16 @@ type getAllArticlesType = {
   userId: string;
 };
 
-export const getAllArticles = ({
+export const getPreferenceArticles = ({
   userPreference,
   userId,
 }: getAllArticlesType) => {
-  return apiRequest("post", "/article/get-articles", {
-    userPreference,
-    userId,
-  });
+  const queryString = userPreference
+    .map((cat: string) => `category=${encodeURIComponent(cat)}`)
+    .join("&");
+  const url = `/articles?${queryString}&id=${userId}`;
+
+  return apiRequest("get", url);
 };
 
 type likeArticleType = {
@@ -26,9 +28,8 @@ type likeArticleType = {
 };
 
 export const likeArticle = ({ userId, articleId }: likeArticleType) => {
-  return apiRequest("post", "/article/like-article", {
+  return apiRequest("patch", `/articles/${articleId}/like`, {
     userId,
-    articleId,
   });
 };
 
@@ -38,9 +39,8 @@ type disLikeArticleType = {
 };
 
 export const disLikeArticle = ({ userId, articleId }: disLikeArticleType) => {
-  return apiRequest("post", "/article/dis-like-article", {
+  return apiRequest("patch", `/articles/${articleId}/dislike`, {
     userId,
-    articleId,
   });
 };
 
@@ -53,8 +53,7 @@ export const blockArticleForUser = ({
   userId,
   articleId,
 }: blockArticleForUserType) => {
-  return apiRequest("post", "/user/block-article-user", {
-    userId,
+  return apiRequest("post", `/users/${userId}/block-article`, {
     articleId,
   });
 };
@@ -64,9 +63,7 @@ type getUserArticlesType = {
 };
 
 export const getUserArticles = ({ userId }: getUserArticlesType) => {
-  return apiRequest("post", "/article/get-user-articles", {
-    userId,
-  });
+  return apiRequest("get", `/articles/user/${userId}`);
 };
 
 type editArticleType = {
@@ -75,7 +72,7 @@ type editArticleType = {
 };
 
 export const editArticle = ({ userId, updated }: editArticleType) => {
-  return apiRequest("post", "/article/edit-article", {
+  return apiRequest("put", `/articles/${updated.id}`, {
     userId,
     updated,
   });
@@ -86,7 +83,5 @@ type deleteArticleType = {
 };
 
 export const deleteArticle = ({ articleId }: deleteArticleType) => {
-  return apiRequest("delete", "/article/delete-article", {
-    articleId,
-  });
+  return apiRequest("delete", `/articles/${articleId}`);
 };

@@ -26,9 +26,9 @@ app.use(cookierparser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use("/auth", authRoute);
-app.use("/user", userRoute);
-app.use("/article", articleRoute);
+app.use("/auths", authRoute);
+app.use("/users", userRoute);
+app.use("/articles", articleRoute);
 
 databaseConnection();
 

@@ -51,12 +51,21 @@ export const createArticle = async (req: Request, res: Response) => {
 
 export const getArticlesByPreference = async (req: Request, res: Response) => {
   try {
-    const { userId, userPreference } = req.body;
+    const category = req.query.category as string | string[] | undefined;
+    const userPreference = category ? ([] as string[]).concat(category) : [];
+    const userId = req.query.id;
 
     if (userPreference.length === 0) {
       res
         .status(StatusCode.BAD_REQUEST)
         .json({ message: "Invalid or missing preferences" });
+      return;
+    }
+
+    if (!userId) {
+      res
+        .status(StatusCode.NOT_FOUND)
+        .json({ message: "Unable to fetch User Id" });
       return;
     }
 
@@ -92,7 +101,8 @@ export const getArticlesByPreference = async (req: Request, res: Response) => {
 
 export const likeArticle = async (req: Request, res: Response) => {
   try {
-    const { userId, articleId } = req.body;
+    const articleId = req.params.articleId;
+    const { userId } = req.body;
 
     if (!userId || !articleId) {
       res
@@ -140,7 +150,8 @@ export const likeArticle = async (req: Request, res: Response) => {
 
 export const disLikeArticle = async (req: Request, res: Response) => {
   try {
-    const { userId, articleId } = req.body;
+    const articleId = req.params.articleId;
+    const { userId } = req.body;
 
     if (!userId || !articleId) {
       res
@@ -188,7 +199,7 @@ export const disLikeArticle = async (req: Request, res: Response) => {
 
 export const getUserArticles = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.body;
+    const userId = req.params.userId;
 
     if (!userId) {
       res
@@ -213,11 +224,12 @@ export const getUserArticles = async (req: Request, res: Response) => {
 
 export const editArticle = async (req: Request, res: Response) => {
   try {
+    const articleId = req.params.articleId;
     const { userId, updated } = req.body;
-    const { id, title, category, description, tags, image } = updated;
+    const { title, category, description, tags, image } = updated;
 
     const article = await Article.findOneAndUpdate(
-      { _id: id, author: userId },
+      { _id: articleId, author: userId },
       {
         title,
         category,
@@ -252,7 +264,7 @@ export const editArticle = async (req: Request, res: Response) => {
 
 export const deleteArticle = async (req: Request, res: Response) => {
   try {
-    const { articleId } = req.body;
+    const articleId = req.params.articleId;
 
     const article = await Article.deleteOne({ _id: articleId });
 

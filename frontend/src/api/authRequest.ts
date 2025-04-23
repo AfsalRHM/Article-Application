@@ -7,7 +7,7 @@ type userLoginType = {
 };
 
 export const userLogin = (credentials: userLoginType) => {
-    return apiRequest("post", "/auth/login", credentials);
+    return apiRequest("post", "/auths/login", credentials);
 };
 
 type userRegisterType = {
@@ -19,5 +19,5 @@ type userRegisterType = {
 };
 
 export const userRegister = (credentials: userRegisterType) => {
-  return apiRequest("post", "/auth/register", credentials);
+  return apiRequest("post", "/auths/register", credentials);
 };

@@ -7,7 +7,8 @@ import { StatusCode } from "../constants/statusCodes";
 
 export const blockArticleForUser = async (req: Request, res: Response) => {
   try {
-    const { userId, articleId } = req.body;
+    const userId = req.params.userId;
+    const { articleId } = req.body;
 
     if (!userId || !articleId) {
       res
@@ -52,7 +53,7 @@ export const blockArticleForUser = async (req: Request, res: Response) => {
 
 export const getUserData = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.body;
+    const userId = req.params.userId;
 
     if (!userId) {
       res
@@ -83,7 +84,8 @@ export const getUserData = async (req: Request, res: Response) => {
 
 export const updateUserProfileData = async (req: Request, res: Response) => {
   try {
-    const { userId, data } = req.body;
+    const userId = req.params.userId;
+    const { data } = req.body;
 
     if (!userId) {
       res
@@ -122,7 +124,8 @@ export const updateUserProfileData = async (req: Request, res: Response) => {
 
 export const updateUserPasswordData = async (req: Request, res: Response) => {
   try {
-    const { userId, data } = req.body;
+    const userId = req.params.userId;
+    const { data } = req.body;
 
     if (!userId) {
       res
@@ -171,7 +174,8 @@ export const updateUserPasswordData = async (req: Request, res: Response) => {
 
 export const updateUserPreferenceData = async (req: Request, res: Response) => {
   try {
-    const { userId, selectedCategories } = req.body;
+    const userId = req.params.userId;
+    const { selectedCategories } = req.body;
 
     if (!userId) {
       res

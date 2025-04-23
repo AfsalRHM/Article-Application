@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FiClock, FiSearch, FiRefreshCw, FiInfo } from "react-icons/fi";
 import NavBar from "../components/shared/NavBar";
-import { getAllArticles } from "../api/articleRequest";
+import { getPreferenceArticles } from "../api/articleRequest";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import articleType from "../interface/IarticleInterface";
@@ -71,7 +71,7 @@ const HomePage: React.FC = () => {
     const fetchArticles = async () => {
       setIsLoading(true);
       try {
-        const response = await getAllArticles({ userPreference, userId });
+        const response = await getPreferenceArticles({ userPreference, userId });
         setArticles(response.data);
       } catch (error) {
         console.error("Failed to fetch articles:", error);
