@@ -40,13 +40,19 @@ const LoginComponent = ({ setIsLogin }: LoginComponentType) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const setUserData = (userData: userDataType) => {
+  const setUserData = ({
+    userData,
+    accessToken,
+  }: {
+    userData: userDataType;
+    accessToken: string;
+  }) => {
     dispatch(
       assignData({
-        accessToken: "no token",
         userId: userData._id,
         userMail: userData.email,
         userPreference: userData.preferences,
+        userToken: accessToken,
       })
     );
   };
@@ -58,7 +64,11 @@ const LoginComponent = ({ setIsLogin }: LoginComponentType) => {
     try {
       const response = await userLogin(data);
 
-      setUserData(response.data);
+      setUserData({
+        userData: response.data,
+        accessToken: response.accessToken,
+      });
+      console.log(response);
       showSuccessToast("Login Successfull..");
       navigate("/");
     } catch (error) {

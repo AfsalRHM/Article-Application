@@ -10,7 +10,7 @@ const instance = axios.create({
   },
 });
 
-export const apiRequest = async (
+export const apiPublic = async (
   method: "get" | "post" | "put" | "patch" | "delete",
   url: string,
   data?: any,
@@ -24,3 +24,5 @@ export const apiRequest = async (
   });
   return res.data;
 };
+
+export default apiPublic;

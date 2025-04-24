@@ -1,20 +1,20 @@
 import storage from "redux-persist/lib/storage";
-
-import userReducer from "./slice/userSlice";
-import { configureStore } from "@reduxjs/toolkit";
+import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { persistReducer, persistStore } from "redux-persist";
 
-const persistConfig: {
-  key: string;
-  version: number;
-  storage: any;
-} = {
+import userReducer from "./slice/userSlice";
+
+const persistConfig = {
   key: "root",
   version: 1,
   storage,
 };
 
-const persistedReducer = persistReducer(persistConfig, userReducer);
+const rootReducer = combineReducers({
+  user: userReducer,
+});
+
+const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export const store = configureStore({
   reducer: persistedReducer,
@@ -28,5 +28,5 @@ export const persistor = persistStore(store);
 
 // persistor.purge()
 
-export type RootState = ReturnType<typeof userReducer>;
+export type RootState = ReturnType<typeof rootReducer>;
 export type AppDispatch = typeof store.dispatch;

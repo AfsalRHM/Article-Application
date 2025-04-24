@@ -1,8 +1,9 @@
 import articleType from "../interface/IarticleInterface";
-import { apiRequest } from "./apiRequest";
+import { apiPrivate } from "./private/apiPrivate";
+
 
 export const createArticle = (articleData: articleType) => {
-  return apiRequest("post", "/articles", articleData);
+  return apiPrivate("post", "/articles", articleData);
 };
 
 type getAllArticlesType = {
@@ -19,7 +20,7 @@ export const getPreferenceArticles = ({
     .join("&");
   const url = `/articles?${queryString}&id=${userId}`;
 
-  return apiRequest("get", url);
+  return apiPrivate("get", url);
 };
 
 type likeArticleType = {
@@ -28,7 +29,7 @@ type likeArticleType = {
 };
 
 export const likeArticle = ({ userId, articleId }: likeArticleType) => {
-  return apiRequest("patch", `/articles/${articleId}/like`, {
+  return apiPrivate("patch", `/articles/${articleId}/like`, {
     userId,
   });
 };
@@ -39,7 +40,7 @@ type disLikeArticleType = {
 };
 
 export const disLikeArticle = ({ userId, articleId }: disLikeArticleType) => {
-  return apiRequest("patch", `/articles/${articleId}/dislike`, {
+  return apiPrivate("patch", `/articles/${articleId}/dislike`, {
     userId,
   });
 };
@@ -53,7 +54,7 @@ export const blockArticleForUser = ({
   userId,
   articleId,
 }: blockArticleForUserType) => {
-  return apiRequest("post", `/users/${userId}/block-article`, {
+  return apiPrivate("post", `/users/${userId}/block-article`, {
     articleId,
   });
 };
@@ -63,7 +64,7 @@ type getUserArticlesType = {
 };
 
 export const getUserArticles = ({ userId }: getUserArticlesType) => {
-  return apiRequest("get", `/articles/user/${userId}`);
+  return apiPrivate("get", `/articles/user/${userId}`);
 };
 
 type editArticleType = {
@@ -72,7 +73,7 @@ type editArticleType = {
 };
 
 export const editArticle = ({ userId, updated }: editArticleType) => {
-  return apiRequest("put", `/articles/${updated.id}`, {
+  return apiPrivate("put", `/articles/${updated.id}`, {
     userId,
     updated,
   });
@@ -83,5 +84,5 @@ type deleteArticleType = {
 };
 
 export const deleteArticle = ({ articleId }: deleteArticleType) => {
-  return apiRequest("delete", `/articles/${articleId}`);
+  return apiPrivate("delete", `/articles/${articleId}`);
 };

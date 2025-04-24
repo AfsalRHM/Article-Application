@@ -4,6 +4,7 @@ import { FiLogOut, FiPlusCircle, FiSearch, FiSettings } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
 import { removeData } from "../../redux/slice/userSlice";
 import { useDispatch } from "react-redux";
+import { userLogout } from "../../api/authRequest";
 
 type navbarType = {
   setSearchTerm?: React.Dispatch<React.SetStateAction<string>>;
@@ -17,6 +18,7 @@ const NavBar = ({ setSearchTerm, searchTerm }: navbarType) => {
 
   const handleLogout = () => {
     dispatch(removeData());
+    userLogout();
     navigate("/auth/login");
   };
 

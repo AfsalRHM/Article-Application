@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
 import {
   loginValidation,
   registerValidation,
@@ -13,8 +13,15 @@ import {
   insertUser,
 } from "../service/authService";
 import { StatusCode } from "../constants/statusCodes";
+import {
+  signAccessToken,
+  signRefreshToken,
+  verifyRefreshToken,
+} from "../utils/jwt";
+import { JwtPayload } from "jsonwebtoken";
 
 type userDataType = {
+  _id?: string;
   first_name: string;
   last_name: string;
   phone_number: string;
@@ -105,11 +112,29 @@ export const userLogin = async (req: Request, res: Response) => {
       if (passwordCompare) {
         const { password, ...userFilteredData } = existingUser;
 
-        res.status(StatusCode.OK).json({
-          status: true,
-          message: "User Login Successfull",
-          data: userFilteredData,
+        const accessToken = signAccessToken({
+          userId: existingUser._id,
+          userEmail: existingUser.email,
         });
+        const refreshToken = signRefreshToken({
+          userId: existingUser._id,
+          userEmail: existingUser.email,
+        });
+
+        res
+          .status(StatusCode.OK)
+          .cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+          })
+          .json({
+            status: true,
+            message: "User Login Successfull",
+            data: userFilteredData,
+            accessToken,
+          });
       } else {
         res
           .status(StatusCode.UNAUTHORIZED)
@@ -129,5 +154,51 @@ export const userLogin = async (req: Request, res: Response) => {
     res
       .status(StatusCode.BAD_REQUEST)
       .json({ message: "error while validate" });
+  }
+};
+
+export const refreshToken = async (req: Request, res: Response) => {
+  try {
+    const cookies = req.cookies;
+    const token = cookies.refreshToken;
+
+    if (!token) {
+      res
+        .status(StatusCode.UNAUTHORIZED)
+        .json({ message: "Refresh token missing" });
+      return;
+    }
+
+    const decoded = verifyRefreshToken(token) as JwtPayload;
+
+    if (!decoded) {
+      throw new Error("Refresh Token Expired");
+    }
+
+    const accessToken = signAccessToken({
+      userId: decoded.userId,
+      userEmail: decoded.userEmail,
+    });
+
+    res.status(200).json({ accessToken });
+  } catch (error: any) {
+    console.log(error.message, "error on the refreshToken controller");
+    res
+      .status(StatusCode.BAD_REQUEST)
+      .json({ message: "error while refreshing token" });
+  }
+};
+
+export const userLogout = async (req: Request, res: Response) => {
+  try {
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+    });
+    res.status(200).json({ message: "Refresh token cleared" });
+  } catch (error: any) {
+    console.log(error.message, "error on the userLogout controller");
+    res.status(StatusCode.BAD_REQUEST).json({ message: "error while logout" });
   }
 };

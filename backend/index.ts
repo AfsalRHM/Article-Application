@@ -1,8 +1,10 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import cookierparser from "cookie-parser";
+import cookieparser from "cookie-parser";
 import bodyParser from "body-parser";
+
+dotenv.config();
 
 import authRoute from "./src/routes/authRoutes";
 import { databaseConnection } from "./src/config/db";
@@ -19,9 +21,8 @@ app.use(
   })
 );
 
-dotenv.config();
 
-app.use(cookierparser());
+app.use(cookieparser());
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

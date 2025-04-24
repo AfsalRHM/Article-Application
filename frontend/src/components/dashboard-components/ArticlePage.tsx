@@ -32,7 +32,7 @@ const ArticlePage = ({
   articleData,
   getCategoryColors,
 }: articlePageType) => {
-  const userId = useSelector((state: RootState) => state.userId);
+  const userId = useSelector((state: RootState) => state.user.userId);
 
   const [likeCount, setLikeCount] = useState<number>(articleData.likes!.length);
   const [likeStatus, setLikeStatus] = useState<boolean>(false);

@@ -62,13 +62,11 @@ const categoryColors: Record<
 };
 
 const PreferencesSettings: React.FC = () => {
-  const userPreferences = useSelector(
-    (state: RootState) => state.userPreference
-  );
-
   const dispatch = useDispatch();
 
-  const userId = useSelector((state: RootState) => state.userId);
+  const { userId, userPreference } = useSelector(
+    (state: RootState) => state.user
+  );
 
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -76,8 +74,8 @@ const PreferencesSettings: React.FC = () => {
 
   useEffect(() => {
     // Set selected categories from redux store
-    setSelectedCategories([...userPreferences]);
-  }, [userPreferences]);
+    setSelectedCategories([...userPreference]);
+  }, [userPreference]);
 
   const toggleCategory = (category: string) => {
     setSelectedCategories((prev) =>
@@ -107,7 +105,6 @@ const PreferencesSettings: React.FC = () => {
       });
       dispatch(
         assignData({
-          accessToken: "no token",
           userId: response.data._id,
           userMail: response.data.email,
           userPreference: response.data.preferences,

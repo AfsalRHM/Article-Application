@@ -20,7 +20,7 @@ const PasswordSettings: React.FC = () => {
     reset,
   } = useForm<PasswordForm>();
 
-  const userId = useSelector((state: RootState) => state.userId);
+  const userId = useSelector((state: RootState) => state.user.userId);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });

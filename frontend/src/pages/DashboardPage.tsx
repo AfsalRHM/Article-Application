@@ -62,10 +62,7 @@ const HomePage: React.FC = () => {
   >(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const userPreference = useSelector(
-    (state: RootState) => state.userPreference
-  );
-  const userId = useSelector((state: RootState) => state.userId);
+  const {userId, userPreference} = useSelector((state: RootState) => state.user);
 
   useEffect(() => {
     const fetchArticles = async () => {

@@ -1,27 +1,28 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-const initialState = {
-  accessToken: "",
+interface UserState {
+  userId: string;
+  userMail: string;
+  userPreference: string[];
+  userToken?: string;
+}
+
+const initialState: UserState = {
   userId: "",
   userMail: "",
   userPreference: [],
+  userToken: "",
 };
 
 const userSlice = createSlice({
-  name: "user data",
+  name: "user",
   initialState,
   reducers: {
-    assignData: (state, action) => {
-      state.accessToken = action.payload.accessToken;
-      state.userId = action.payload.userId;
-      state.userMail = action.payload.userMail;
-      state.userPreference = action.payload.userPreference;
+    assignData: (state, action: PayloadAction<UserState>) => {
+      Object.assign(state, action.payload);
     },
     removeData: (state) => {
-      state.accessToken = "";
-      state.userId = "";
-      state.userMail = "";
-      state.userPreference = [];
+      Object.assign(state, initialState);
     },
   },
 });

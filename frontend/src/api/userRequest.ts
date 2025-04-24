@@ -1,11 +1,11 @@
-import { apiRequest } from "./apiRequest";
+import { apiPrivate } from "./private/apiPrivate";
 
 type getUserDataType = {
   userId: string;
 };
 
 export const getUserData = (data: getUserDataType) => {
-  return apiRequest("get", `/users/${data.userId}`);
+  return apiPrivate("get", `/users/${data.userId}`);
 };
 
 type updateUserProfileType = {
@@ -14,7 +14,7 @@ type updateUserProfileType = {
 };
 
 export const updateUserProfile = (data: updateUserProfileType) => {
-  return apiRequest("patch", `/users/${data.userId}/profile`, data);
+  return apiPrivate("patch", `/users/${data.userId}/profile`, data);
 };
 
 type updateUserPasswordType = {
@@ -26,7 +26,7 @@ type updateUserPasswordType = {
 };
 
 export const updateUserPassword = (data: updateUserPasswordType) => {
-  return apiRequest("patch", `/users/${data.userId}/password`, data);
+  return apiPrivate("patch", `/users/${data.userId}/password`, data);
 };
 
 type updateUserPreferenceType = {
@@ -35,5 +35,5 @@ type updateUserPreferenceType = {
 };
 
 export const updateUserPreference = (data: updateUserPreferenceType) => {
-  return apiRequest("patch", `/users/${data.userId}/preference`, data);
+  return apiPrivate("patch", `/users/${data.userId}/preference`, data);
 };

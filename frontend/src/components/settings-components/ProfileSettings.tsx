@@ -18,7 +18,7 @@ const ProfileSettings: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
 
-  const userId = useSelector((state: RootState) => state.userId);
+  const userId = useSelector((state: RootState) => state.user.userId);
 
   const dispatch = useDispatch();
 
@@ -42,7 +42,6 @@ const ProfileSettings: React.FC = () => {
 
         dispatch(
           assignData({
-            accessToken: "no token",
             userId: fetchedUser._id,
             userMail: fetchedUser.email,
             userPreference: fetchedUser.preferences,

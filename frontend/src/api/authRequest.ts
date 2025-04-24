@@ -1,4 +1,4 @@
-import { apiRequest } from "./apiRequest";
+import apiPublic from "./public/apiPublic";
 
 type userLoginType = {
   email?: string;
@@ -7,17 +7,25 @@ type userLoginType = {
 };
 
 export const userLogin = (credentials: userLoginType) => {
-    return apiRequest("post", "/auths/login", credentials);
+  return apiPublic("post", "/auths/login", credentials);
 };
 
 type userRegisterType = {
   email: string;
   password: string;
   phone: string;
-  dob: string,
-  articlePreferences: string[]
+  dob: string;
+  articlePreferences: string[];
 };
 
 export const userRegister = (credentials: userRegisterType) => {
-  return apiRequest("post", "/auths/register", credentials);
+  return apiPublic("post", "/auths/register", credentials);
+};
+
+export const refreshToken = () => {
+  return apiPublic("post", "/auths/refresh-token");
+};
+
+export const userLogout = () => {
+  return apiPublic("post", "/auths/logout");
 };

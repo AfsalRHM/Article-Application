@@ -66,7 +66,7 @@ const categoryColors: Record<
 };
 
 const NewArticlePage = () => {
-  const userId = useSelector((state: RootState) => state.userId);
+  const userId = useSelector((state: RootState) => state.user.userId);
   const [tags, setTags] = useState<string[]>([]);
   const [currentTag, setCurrentTag] = useState("");
   const [coverImage, setCoverImage] = useState<string | null>(null);

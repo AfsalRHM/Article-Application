@@ -20,7 +20,7 @@ const MyArticlesSettings: React.FC = () => {
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
 
-  const userId = useSelector((state: RootState) => state.userId);
+  const userId = useSelector((state: RootState) => state.user.userId);
 
   useEffect(() => {
     const fetchArticles = async () => {
