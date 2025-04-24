@@ -69,7 +69,6 @@ const LoginComponent = ({ setIsLogin }: LoginComponentType) => {
         userData: response.data,
         accessToken: response.accessToken,
       });
-      console.log(response);
       showSuccessToast("Login Successfull..");
       navigate("/");
     } catch (error) {
