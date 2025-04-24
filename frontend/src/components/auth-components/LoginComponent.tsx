@@ -51,6 +51,7 @@ const LoginComponent = ({ setIsLogin }: LoginComponentType) => {
       assignData({
         userId: userData._id,
         userMail: userData.email,
+        userName: [userData.first_name, userData.last_name].join(" "),
         userPreference: userData.preferences,
         userToken: accessToken,
       })

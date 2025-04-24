@@ -107,6 +107,9 @@ const PreferencesSettings: React.FC = () => {
         assignData({
           userId: response.data._id,
           userMail: response.data.email,
+          userName: [response.data.first_name, response.data.last_name].join(
+            " "
+          ),
           userPreference: response.data.preferences,
         })
       );

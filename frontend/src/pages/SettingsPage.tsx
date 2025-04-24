@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { useSearchParams } from "react-router-dom";
 import NavBar from "../components/shared/NavBar";
 import ProfileSettings from "../components/settings-components/ProfileSettings";
 import PasswordSettings from "../components/settings-components/PasswordSettings";
@@ -9,7 +10,9 @@ import MyArticlesSettings from "../components/settings-components/MyArticlesSett
 const tabs = ["Profile", "Password", "Preferences", "My Articles"];
 
 const SettingsPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState("Profile");
+  const [searchParams] = useSearchParams();
+  const defaultTab = searchParams.get("t") || "Profile";
+  const [activeTab, setActiveTab] = useState(defaultTab);
 
   const renderTabContent = () => {
     switch (activeTab) {

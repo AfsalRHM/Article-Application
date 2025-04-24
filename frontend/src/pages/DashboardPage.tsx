@@ -8,6 +8,7 @@ import { RootState } from "../redux/store";
 import articleType from "../interface/IarticleInterface";
 import { format } from "date-fns";
 import ArticlePage from "../components/dashboard-components/ArticlePage";
+import { Link } from "react-router-dom";
 
 const categoryColors: Record<
   string,
@@ -62,13 +63,18 @@ const HomePage: React.FC = () => {
   >(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const {userId, userPreference} = useSelector((state: RootState) => state.user);
+  const { userId, userPreference } = useSelector(
+    (state: RootState) => state.user
+  );
 
   useEffect(() => {
     const fetchArticles = async () => {
       setIsLoading(true);
       try {
-        const response = await getPreferenceArticles({ userPreference, userId });
+        const response = await getPreferenceArticles({
+          userPreference,
+          userId,
+        });
         setArticles(response.data);
       } catch (error) {
         console.error("Failed to fetch articles:", error);
@@ -85,6 +91,9 @@ const HomePage: React.FC = () => {
       setFilteredArticles(
         articles.filter(
           (article) =>
+            article.author.first_name
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()) ||
             article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
             article.description
               .toLowerCase()
@@ -183,9 +192,11 @@ const HomePage: React.FC = () => {
               )}
             </div>
 
-            <button className="px-4 py-1 bg-gray-100 border border-gray-500 text-gray-800 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors duration-300 hover:cursor-pointer">
-              Manage Preferences
-            </button>
+            <Link to="/settings?t=Preferences">
+              <button className="px-4 py-1 bg-gray-100 border border-gray-500 text-gray-800 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors duration-300 hover:cursor-pointer">
+                Manage Preferences
+              </button>
+            </Link>
           </div>
 
           {isLoading ? (
@@ -241,43 +252,45 @@ const HomePage: React.FC = () => {
                     onClick={() => openArticle(article)}
                     className="border border-purple-100 rounded-xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md"
                   >
-                    <div className="flex flex-col md:flex-row">
-                      <div className="md:w-2/3 p-6">
-                        <div className="flex items-center mb-3">
-                          <div className="h-8 w-8 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white flex items-center justify-center mr-2">
-                            <span className="text-xs font-bold">
-                              {article.author.first_name
-                                .substring(0, 1)
-                                .toUpperCase() +
-                                article.author.last_name
-                                  .substring(0, 1)
-                                  .toUpperCase()}
-                            </span>
+                    <div className="flex flex-col md:flex-row h-full">
+                      <div className="md:w-2/3 p-6 flex flex-col h-full">
+                        {/* Top: author, title, desc */}
+                        <div className="flex-grow">
+                          <div className="flex items-center mb-3">
+                            <div className="h-8 w-8 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white flex items-center justify-center mr-2">
+                              <span className="text-xs font-bold">
+                                {article.author.first_name[0].toUpperCase()}
+                                {article.author.last_name[0].toUpperCase()}
+                              </span>
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-800">
+                                {article.author.first_name}
+                              </p>
+                              <p>
+                                {formatDate({
+                                  createdDate:
+                                    article.createdAt!.toLocaleString(),
+                                })}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium text-gray-800">
-                              {article.author.first_name}
-                            </p>
-                            <p>
-                              {formatDate({
-                                createdDate:
-                                  article.createdAt!.toLocaleString(),
-                              })}
-                            </p>
-                          </div>
+
+                          <span
+                            className={`inline-block px-3 py-1 text-xs font-medium rounded-full mb-2 ${colorSet.bg} ${colorSet.text} border ${colorSet.border}`}
+                          >
+                            {article.category}
+                          </span>
+                          <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
+                            {article.title}
+                          </h3>
+                          <p className="text-gray-600 mb-4 line-clamp-3">
+                            {article.description}
+                          </p>
                         </div>
-                        <span
-                          className={`inline-block px-3 py-1 text-xs font-medium rounded-full mb-2 ${colorSet.bg} ${colorSet.text} border ${colorSet.border}`}
-                        >
-                          {article.category}
-                        </span>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
-                          {article.title}
-                        </h3>
-                        <p className="text-gray-600 mb-4 line-clamp-3">
-                          {article.description}
-                        </p>
-                        <div className="flex items-center justify-between text-gray-500 text-sm">
+
+                        {/* Bottom: read time + info icon */}
+                        <div className="flex items-center justify-between text-gray-500 text-sm pt-2 mt-auto border-t border-gray-200">
                           <div className="flex items-center">
                             <FiClock className="mr-1" />
                             {calculateReadingTime({
@@ -290,6 +303,7 @@ const HomePage: React.FC = () => {
                           </div>
                         </div>
                       </div>
+
                       <div className="md:w-1/3">
                         <img
                           src={article.coverImage}

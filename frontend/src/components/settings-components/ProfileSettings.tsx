@@ -44,6 +44,7 @@ const ProfileSettings: React.FC = () => {
           assignData({
             userId: fetchedUser._id,
             userMail: fetchedUser.email,
+            userName: [fetchedUser.first_name, fetchedUser.last_name].join(" "),
             userPreference: fetchedUser.preferences,
           })
         );

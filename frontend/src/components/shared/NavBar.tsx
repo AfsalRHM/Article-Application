@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiLogOut, FiPlusCircle, FiSearch, FiSettings } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
 import { removeData } from "../../redux/slice/userSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { userLogout } from "../../api/authRequest";
+import { RootState } from "../../redux/store";
 
 type navbarType = {
   setSearchTerm?: React.Dispatch<React.SetStateAction<string>>;
@@ -15,6 +16,8 @@ const NavBar = ({ setSearchTerm, searchTerm }: navbarType) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const userData = useSelector((state: RootState) => state.user);
 
   const handleLogout = () => {
     dispatch(removeData());
@@ -84,7 +87,9 @@ const NavBar = ({ setSearchTerm, searchTerm }: navbarType) => {
                 className="h-8 w-8 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white flex items-center justify-center cursor-pointer"
                 onClick={() => setDropdownOpen(!dropdownOpen)}
               >
-                <span className="font-medium text-sm">JD</span>
+                <span className="font-medium text-sm">
+                  {userData.userName.split(" ").map((name) => name[0])}
+                </span>
               </div>
 
               {/* Dropdown - available on all screens */}
