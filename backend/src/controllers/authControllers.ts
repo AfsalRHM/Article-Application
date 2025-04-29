@@ -1,37 +1,27 @@
-import { Request, response, Response } from "express";
+import { Request, Response } from "express";
+import * as yup from "yup";
+
 import {
   loginValidation,
   registerValidation,
 } from "../validators/userValidators";
 
-import * as yup from "yup";
+import { isEmailTaken, registerUser, loginUser } from "../service/authService";
 
-import bcrypt from "bcryptjs";
-import {
-  checkMailDuplicate,
-  findUser,
-  insertUser,
-} from "../service/authService";
-import { StatusCode } from "../constants/statusCodes";
 import {
   signAccessToken,
   signRefreshToken,
   verifyRefreshToken,
 } from "../utils/jwt";
+
+import { StatusCode } from "../constants/statusCodes";
 import { JwtPayload } from "jsonwebtoken";
+import { IAuthController } from "./interfaces/IauthController";
 
-type userDataType = {
-  _id?: string;
-  first_name: string;
-  last_name: string;
-  phone_number: string;
-  email: string;
-  dob: string;
-  password: string;
-  preferences: string[];
-};
-
-export const userRegister = async (req: Request, res: Response) => {
+export const userRegister: IAuthController["userRegister"] = async (
+  req: Request,
+  res: Response
+) => {
   try {
     await registerValidation.validate(req.body, { abortEarly: false });
 
@@ -45,102 +35,85 @@ export const userRegister = async (req: Request, res: Response) => {
       articlePreferences,
     } = req.body;
 
-    const emailExists = await checkMailDuplicate({ email: email });
-
+    const emailExists = await isEmailTaken(email);
     if (emailExists) {
-      res
-        .status(StatusCode.CONFLICT)
-        .json({ status: true, message: "User with email already registered" });
-      return;
-    } else {
-      const encryptedPassword = bcrypt.hashSync(password, 10);
-
-      const userData = await insertUser({
-        first_name: firstName,
-        last_name: lastName,
-        email,
-        phone_number: phone,
-        dob,
-        password: encryptedPassword,
-        preferences: articlePreferences,
+      res.status(StatusCode.CONFLICT).json({
+        status: true,
+        message: "User with email already registered",
       });
-
-      if (userData) {
-        res.status(StatusCode.OK).json({
-          status: true,
-          message: "User Registered Successfully",
-          data: userData,
-        });
-      } else {
-        res.status(StatusCode.OK).json({ message: "Unable to Register User" });
-      }
     }
-  } catch (error: any) {
-    if (error instanceof yup.ValidationError) {
-      const errors = error.inner.map((err) => ({
-        path: err.path,
-        message: err.message,
-      }));
-      res.status(StatusCode.BAD_REQUEST).json({ errors });
-      return;
-    }
-    console.log(error.message, "error on the userRegister controller");
-    res
-      .status(StatusCode.BAD_REQUEST)
-      .json({ message: "error while validate" });
-  }
-};
 
-export const userLogin = async (req: Request, res: Response) => {
-  try {
-    await loginValidation.validate(req.body, { abortEarly: false });
-
-    const { identifier, password } = req.body;
-
-    const existingUser: userDataType | null | undefined = await findUser({
-      identifier,
+    const newUser = await registerUser({
+      first_name: firstName,
+      last_name: lastName,
+      phone_number: phone,
+      email,
+      dob,
+      password,
+      preferences: articlePreferences,
     });
 
-    if (!existingUser) {
-      res.status(StatusCode.NOT_FOUND).json({ message: "Invalid Credential" });
-    } else if (existingUser) {
-      const passwordCompare = bcrypt.compareSync(
-        password,
-        existingUser.password
-      );
-
-      if (passwordCompare) {
-        const { password, ...userFilteredData } = existingUser;
-
-        const accessToken = signAccessToken({
-          userId: existingUser._id,
-          userEmail: existingUser.email,
-        });
-        const refreshToken = signRefreshToken({
-          userId: existingUser._id,
-          userEmail: existingUser.email,
-        });
-
-        res
-          .status(StatusCode.OK)
-          .cookie("refreshToken", refreshToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-          })
-          .json({
-            status: true,
-            message: "User Login Successfull",
-            data: userFilteredData,
-            accessToken,
-          });
-      } else {
-        res
-          .status(StatusCode.UNAUTHORIZED)
-          .json({ message: "Invalid Credential" });
-      }
+    res.status(StatusCode.OK).json({
+      status: true,
+      message: "User Registered Successfully",
+      data: newUser,
+    });
+  } catch (error: any) {
+    if (error instanceof yup.ValidationError) {
+      const errors = error.inner.map((err) => ({
+        path: err.path,
+        message: err.message,
+      }));
+      res.status(StatusCode.BAD_REQUEST).json({ errors });
     }
+    console.error("Register Error:", error.message);
+    res
+      .status(StatusCode.INTERNAL_SERVER_ERROR)
+      .json({ message: "Something went wrong" });
+  }
+};
+
+export const userLogin: IAuthController["userLogin"] = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    await loginValidation.validate(req.body, { abortEarly: false });
+    const { identifier, password } = req.body;
+
+    const user = await loginUser(identifier, password);
+    if (!user) {
+      res
+        .status(StatusCode.UNAUTHORIZED)
+        .json({ message: "Invalid credentials" });
+      return;
+    }
+
+    const { password: _, ...userData } = user;
+
+    const accessToken = signAccessToken({
+      userId: user?._id,
+      userEmail: user?.email,
+    });
+    const refreshToken = signRefreshToken({
+      userId: user?._id,
+      userEmail: user?.email,
+    });
+
+    res
+      .status(StatusCode.OK)
+      .cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      .json({
+        status: true,
+        message: "Login successful",
+        accessToken,
+        data: userData,
+      });
   } catch (error: any) {
     if (error instanceof yup.ValidationError) {
       const errors = error.inner.map((err) => ({
@@ -150,55 +123,55 @@ export const userLogin = async (req: Request, res: Response) => {
       res.status(StatusCode.BAD_REQUEST).json({ errors });
       return;
     }
-    console.log(error.message, "error on the userLogin controller");
+    console.error("Login Error:", error.message);
     res
-      .status(StatusCode.BAD_REQUEST)
-      .json({ message: "error while validate" });
+      .status(StatusCode.INTERNAL_SERVER_ERROR)
+      .json({ message: "Login failed" });
   }
 };
 
-export const refreshToken = async (req: Request, res: Response) => {
+export const refreshToken: IAuthController["refreshToken"] = async (
+  req: Request,
+  res: Response
+) => {
   try {
-    const cookies = req.cookies;
-    const token = cookies.refreshToken;
-
+    const token = req.cookies.refreshToken;
     if (!token) {
       res
         .status(StatusCode.UNAUTHORIZED)
-        .json({ message: "Refresh token missing" });
-      return;
+        .json({ message: "No refresh token found" });
     }
 
     const decoded = verifyRefreshToken(token) as JwtPayload;
-
-    if (!decoded) {
-      throw new Error("Refresh Token Expired");
-    }
-
     const accessToken = signAccessToken({
       userId: decoded.userId,
       userEmail: decoded.userEmail,
     });
 
-    res.status(200).json({ accessToken });
+    res.status(StatusCode.OK).json({ accessToken });
   } catch (error: any) {
-    console.log(error.message, "error on the refreshToken controller");
+    console.error("Refresh Token Error:", error.message);
     res
-      .status(StatusCode.BAD_REQUEST)
-      .json({ message: "error while refreshing token" });
+      .status(StatusCode.UNAUTHORIZED)
+      .json({ message: "Invalid refresh token" });
   }
 };
 
-export const userLogout = async (req: Request, res: Response) => {
+export const userLogout: IAuthController["userLogout"] = async (
+  req: Request,
+  res: Response
+) => {
   try {
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: true,
       sameSite: "strict",
     });
-    res.status(200).json({ message: "Refresh token cleared" });
+    res.status(StatusCode.OK).json({ message: "Logged out successfully" });
   } catch (error: any) {
-    console.log(error.message, "error on the userLogout controller");
-    res.status(StatusCode.BAD_REQUEST).json({ message: "error while logout" });
+    console.error("Logout Error:", error.message);
+    res
+      .status(StatusCode.INTERNAL_SERVER_ERROR)
+      .json({ message: "Logout failed" });
   }
 };

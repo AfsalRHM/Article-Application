@@ -1,57 +1,46 @@
 import { Request, Response } from "express";
-import User from "../models/userModel";
-import Article from "../models/articleModel";
 
-import bcrypt from "bcryptjs";
 import { StatusCode } from "../constants/statusCodes";
 
-export const blockArticleForUser = async (req: Request, res: Response) => {
-  try {
-    const userId = req.params.userId;
-    const { articleId } = req.body;
+import {
+  _blockArticleForUser,
+  _getUserData,
+  _updateUserPasswordData,
+  _updateUserPreferenceData,
+  _updateUserProfileData,
+} from "../service/userService";
+import { IUserController } from "./interfaces/IuserController";
 
-    if (!userId || !articleId) {
+export const blockArticleForUser: IUserController["blockArticleForUser"] = async (req: Request, res: Response) => {
+    try {
+      const userId = req.params.userId;
+      const { articleId } = req.body;
+
+      if (!userId || !articleId) {
+        res
+          .status(StatusCode.BAD_REQUEST)
+          .json({ message: "Invalid or missing user id or article id" });
+        return;
+      }
+
+      const respone = await _blockArticleForUser({ userId, articleId });
+
+      res.status(StatusCode.OK).json({
+        message: "Article Blocker for the User",
+        data: respone,
+      });
+    } catch (error: any) {
+      console.error("Error in blockArticleForUser controller:", error.message);
       res
-        .status(StatusCode.BAD_REQUEST)
-        .json({ message: "Invalid or missing user id or article id" });
-      return;
+        .status(StatusCode.INTERNAL_SERVER_ERROR)
+        .json({ message: "Server Error! Try later." });
     }
+  };
 
-    const article = await Article.findById(articleId);
-    if (!article) {
-      res.status(StatusCode.NOT_FOUND).json({ message: "Article not found" });
-      return;
-    }
-
-    const user = await User.findById(userId);
-    if (!user) {
-      res.status(StatusCode.NOT_FOUND).json({ message: "User not found" });
-      return;
-    }
-
-    const userData = await User.findByIdAndUpdate(
-      userId,
-      {
-        $addToSet: { blocked_articles: articleId },
-      },
-      { new: true }
-    );
-
-    const { password, ...fileteredUserData } = userData!.toObject();
-
-    res.status(StatusCode.OK).json({
-      message: "Article Blocker for the User",
-      data: fileteredUserData,
-    });
-  } catch (error: any) {
-    console.error("Error in blockArticleForUser controller:", error.message);
-    res
-      .status(StatusCode.INTERNAL_SERVER_ERROR)
-      .json({ message: "Server Error! Try later." });
-  }
-};
-
-export const getUserData = async (req: Request, res: Response) => {
+export const getUserData: IUserController["getUserData"] = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const userId = req.params.userId;
 
@@ -62,17 +51,11 @@ export const getUserData = async (req: Request, res: Response) => {
       return;
     }
 
-    const userData = await User.findById(userId);
-    if (!userData) {
-      res.status(StatusCode.NOT_FOUND).json({ message: "User not found" });
-      return;
-    }
-
-    const { password, ...fileteredUserData } = userData!.toObject();
+    const userData = await _getUserData(userId);
 
     res.status(StatusCode.OK).json({
       message: "User Data Fetched Successfully",
-      data: fileteredUserData,
+      data: userData,
     });
   } catch (error: any) {
     console.error("Error in getUserData controller:", error.message);
@@ -82,131 +65,92 @@ export const getUserData = async (req: Request, res: Response) => {
   }
 };
 
-export const updateUserProfileData = async (req: Request, res: Response) => {
-  try {
-    const userId = req.params.userId;
-    const { data } = req.body;
+export const updateUserProfileData: IUserController["updateUserProfileData"] = async (req: Request, res: Response) => {
+    try {
+      const userId = req.params.userId;
+      const { data } = req.body;
 
-    if (!userId) {
-      res
-        .status(StatusCode.BAD_REQUEST)
-        .json({ message: "Invalid or missing user id" });
-      return;
-    }
+      if (!userId) {
+        res
+          .status(StatusCode.BAD_REQUEST)
+          .json({ message: "Invalid or missing user id" });
+        return;
+      }
 
-    const userData = await User.findById(userId);
-    if (!userData) {
-      res.status(StatusCode.NOT_FOUND).json({ message: "User not found" });
-      return;
-    }
+      const updatedUserData = await _updateUserProfileData(userId, data);
 
-    userData.first_name = data.first_name;
-    userData.last_name = data.last_name;
-    userData.email = data.email;
-    userData.dob = data.dob;
-    userData.phone_number = data.phone_number;
-
-    await userData.save();
-
-    const { password, ...fileteredUserData } = userData!.toObject();
-
-    res.status(StatusCode.OK).json({
-      message: "User Data Updated Successfully",
-      data: fileteredUserData,
-    });
-  } catch (error: any) {
-    console.error("Error in updateUserProfileData controller:", error.message);
-    res
-      .status(StatusCode.INTERNAL_SERVER_ERROR)
-      .json({ message: "Server Error! Try later." });
-  }
-};
-
-export const updateUserPasswordData = async (req: Request, res: Response) => {
-  try {
-    const userId = req.params.userId;
-    const { data } = req.body;
-
-    if (!userId) {
-      res
-        .status(StatusCode.BAD_REQUEST)
-        .json({ message: "Invalid or missing user id" });
-      return;
-    }
-
-    const userData = await User.findById(userId);
-    if (!userData) {
-      res.status(StatusCode.NOT_FOUND).json({ message: "User not found" });
-      return;
-    }
-
-    const passwordMatch = bcrypt.compareSync(
-      data.currentPassword,
-      userData.password
-    );
-
-    if (!passwordMatch) {
-      res.status(StatusCode.UNAUTHORIZED).json({
-        message: "Incorrect Current Password",
+      res.status(StatusCode.OK).json({
+        message: "User Data Updated Successfully",
+        data: updatedUserData,
       });
-      return;
-    }
-
-    const hashedPassword = bcrypt.hashSync(data.newPassword, 10);
-
-    userData.password = hashedPassword;
-
-    await userData.save();
-
-    const { password, ...fileteredUserData } = userData!.toObject();
-
-    res.status(StatusCode.OK).json({
-      message: "User Data Updated Successfully",
-      data: fileteredUserData,
-    });
-  } catch (error: any) {
-    console.error("Error in updateUserPasswordData controller:", error.message);
-    res
-      .status(StatusCode.INTERNAL_SERVER_ERROR)
-      .json({ message: "Server Error! Try later." });
-  }
-};
-
-export const updateUserPreferenceData = async (req: Request, res: Response) => {
-  try {
-    const userId = req.params.userId;
-    const { selectedCategories } = req.body;
-
-    if (!userId) {
+    } catch (error: any) {
+      console.error(
+        "Error in updateUserProfileData controller:",
+        error.message
+      );
       res
-        .status(StatusCode.BAD_REQUEST)
-        .json({ message: "Invalid or missing user id" });
-      return;
+        .status(StatusCode.INTERNAL_SERVER_ERROR)
+        .json({ message: "Server Error! Try later." });
     }
+  };
 
-    const userData = await User.findById(userId);
-    if (!userData) {
-      res.status(StatusCode.NOT_FOUND).json({ message: "User not found" });
-      return;
+export const updateUserPasswordData: IUserController["updateUserPasswordData"] = async (req: Request, res: Response) => {
+    try {
+      const userId = req.params.userId;
+      const { data } = req.body;
+
+      if (!userId) {
+        res
+          .status(StatusCode.BAD_REQUEST)
+          .json({ message: "Invalid or missing user id" });
+        return;
+      }
+
+      const updatedUserData = await _updateUserPasswordData(userId, data);
+
+      res.status(StatusCode.OK).json({
+        message: "User Data Updated Successfully",
+        data: updatedUserData,
+      });
+    } catch (error: any) {
+      console.error(
+        "Error in updateUserPasswordData controller:",
+        error.message
+      );
+      res
+        .status(StatusCode.INTERNAL_SERVER_ERROR)
+        .json({ message: "Server Error! Try later." });
     }
+  };
 
-    userData.preferences = selectedCategories;
+export const updateUserPreferenceData: IUserController["updateUserPreferenceData"] = async (req: Request, res: Response) => {
+    try {
+      const userId = req.params.userId;
+      const { selectedCategories } = req.body;
 
-    await userData.save();
+      if (!userId) {
+        res
+          .status(StatusCode.BAD_REQUEST)
+          .json({ message: "Invalid or missing user id" });
+        return;
+      }
 
-    const { password, ...fileteredUserData } = userData!.toObject();
+      const updatedUserData = await _updateUserPreferenceData(
+        userId,
+        selectedCategories
+      );
 
-    res.status(StatusCode.OK).json({
-      message: "User Preference Updated Successfully",
-      data: fileteredUserData,
-    });
-  } catch (error: any) {
-    console.error(
-      "Error in updateUserPreferenceData controller:",
-      error.message
-    );
-    res
-      .status(StatusCode.INTERNAL_SERVER_ERROR)
-      .json({ message: "Server Error! Try later." });
-  }
-};
+      res.status(StatusCode.OK).json({
+        message: "User Preference Updated Successfully",
+        data: updatedUserData,
+      });
+    } catch (error: any) {
+      console.error(
+        "Error in updateUserPreferenceData controller:",
+        error.message
+      );
+      res
+        .status(StatusCode.INTERNAL_SERVER_ERROR)
+        .json({ message: "Server Error! Try later." });
+    }
+  };

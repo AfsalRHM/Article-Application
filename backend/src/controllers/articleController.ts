@@ -1,19 +1,27 @@
 import { Request, Response } from "express";
-import { articleValidation } from "../validators/articleValidators";
 
-import Article from "../models/articleModel";
-import User from "../models/userModel";
-
-import * as yup from "yup";
 import { StatusCode } from "../constants/statusCodes";
 
-export const createArticle = async (req: Request, res: Response) => {
-  try {
-    await articleValidation.validate(req.body, { abortEarly: false });
+import {
+  _createArticle,
+  _deleteArticleService,
+  _dislikeOrUndislikeArticle,
+  _editArticleService,
+  _getArticlesByPreference,
+  _getUserArticlesService,
+  _likeOrUnlikeArticle,
+} from "../service/articleService";
 
+import { IArticleController } from "./interfaces/IarticleController";
+
+export const createArticle: IArticleController["createArticle"] = async (
+  req: Request,
+  res: Response
+) => {
+  try {
     const { author, title, description, category, tags, coverImage } = req.body;
 
-    const articleData = await Article.insertOne({
+    const articleData = await _createArticle({
       author,
       title,
       description,
@@ -22,84 +30,65 @@ export const createArticle = async (req: Request, res: Response) => {
       coverImage,
     });
 
-    if (articleData) {
-      res.status(StatusCode.OK).json({
-        status: true,
-        message: "Article Created Succesfully",
-        data: articleData,
-      });
-    } else {
-      res
-        .status(StatusCode.INTERNAL_SERVER_ERROR)
-        .json({ status: false, message: "Unable to Create Article" });
-    }
+    res.status(StatusCode.OK).json({
+      status: true,
+      message: "Article Created Successfully",
+      data: articleData,
+    });
   } catch (error: any) {
-    if (error instanceof yup.ValidationError) {
-      const errors = error.inner.map((err) => ({
-        path: err.path,
-        message: err.message,
-      }));
-      res.status(StatusCode.BAD_REQUEST).json({ errors });
+    if (error.type === "validation") {
+      res.status(StatusCode.BAD_REQUEST).json({ errors: error.errors });
       return;
     }
-    console.log(error.message, "error on the createArticle controller");
-    res
-      .status(StatusCode.BAD_REQUEST)
-      .json({ message: "error while validate" });
+    console.error("Error in createArticleController:", error.message);
+    res.status(StatusCode.INTERNAL_SERVER_ERROR).json({
+      status: false,
+      message: error.message || "Server Error! Try later.",
+    });
   }
 };
 
-export const getArticlesByPreference = async (req: Request, res: Response) => {
-  try {
-    const category = req.query.category as string | string[] | undefined;
-    const userPreference = category ? ([] as string[]).concat(category) : [];
-    const userId = req.query.id;
+export const getArticlesByPreference: IArticleController["getArticlesByPreference"] = async (req: Request, res: Response) => {
+    try {
+      const category = req.query.category as string | string[] | undefined;
+      const userPreference = category ? ([] as string[]).concat(category) : [];
+      const userId = req.query.id as string;
 
-    if (userPreference.length === 0) {
+      if (userPreference.length === 0) {
+        res
+          .status(StatusCode.BAD_REQUEST)
+          .json({ message: "Invalid or missing preferences" });
+        return;
+      }
+
+      if (!userId) {
+        res
+          .status(StatusCode.NOT_FOUND)
+          .json({ message: "Unable to fetch User Id" });
+        return;
+      }
+
+      const articles = await _getArticlesByPreference(userId, userPreference);
+
+      res.status(StatusCode.OK).json({
+        message: "The Request is successful",
+        data: articles,
+      });
+    } catch (error: any) {
+      console.error(
+        "Error in getArticlesByPreferenceController:",
+        error.message
+      );
       res
         .status(StatusCode.BAD_REQUEST)
-        .json({ message: "Invalid or missing preferences" });
-      return;
+        .json({ message: error.message || "Server Error! Try later.." });
     }
+  };
 
-    if (!userId) {
-      res
-        .status(StatusCode.NOT_FOUND)
-        .json({ message: "Unable to fetch User Id" });
-      return;
-    }
-
-    const userData = await User.findById(userId);
-    if (!userData) {
-      res.status(StatusCode.NOT_FOUND).json({ message: "User not found" });
-      return;
-    }
-
-    const blockedArticles = userData!.blocked_articles;
-
-    const articles = await Article.find({
-      category: { $in: userPreference },
-      author: { $ne: userId },
-      _id: { $nin: blockedArticles },
-    })
-      .sort({ createdAt: -1 })
-      .populate("author");
-
-    res
-      .status(StatusCode.OK)
-      .json({ message: "The Request is successfull", data: articles });
-  } catch (error: any) {
-    console.log(
-      error.message,
-      "error on the getArticlesByPreference controller"
-    );
-    res
-      .status(StatusCode.BAD_REQUEST)
-      .json({ message: "Server Error! try later.." });
-  }
-};
-
-export const likeArticle = async (req: Request, res: Response) => {
+export const likeArticle: IArticleController["likeArticle"] = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const articleId = req.params.articleId;
     const { userId } = req.body;
@@ -111,44 +100,27 @@ export const likeArticle = async (req: Request, res: Response) => {
       return;
     }
 
-    const article = await Article.findById(articleId);
-
-    if (!article) {
-      res.status(StatusCode.NOT_FOUND).json({ message: "Article not found" });
-      return;
-    }
-
-    const alreadyLiked = article.likes.includes(userId);
-
-    let updatedArticle;
-
-    if (alreadyLiked) {
-      updatedArticle = await Article.findByIdAndUpdate(
-        articleId,
-        { $pull: { likes: userId } },
-        { new: true }
-      );
-    } else {
-      updatedArticle = await Article.findByIdAndUpdate(
-        articleId,
-        { $addToSet: { likes: userId }, $pull: { dis_likes: userId } },
-        { new: true }
-      );
-    }
+    const { updatedArticle, alreadyLiked } = await _likeOrUnlikeArticle(
+      articleId,
+      userId
+    );
 
     res.status(StatusCode.OK).json({
       message: alreadyLiked ? "Article unliked" : "Article liked",
       data: updatedArticle,
     });
   } catch (error: any) {
-    console.error("Error in likeArticle controller:", error.message);
+    console.error("Error in likeArticleController:", error.message);
     res
       .status(StatusCode.INTERNAL_SERVER_ERROR)
-      .json({ message: "Server Error! Try later." });
+      .json({ message: error.message || "Server Error! Try later." });
   }
 };
 
-export const disLikeArticle = async (req: Request, res: Response) => {
+export const disLikeArticle: IArticleController["disLikeArticle"] = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const articleId = req.params.articleId;
     const { userId } = req.body;
@@ -160,44 +132,25 @@ export const disLikeArticle = async (req: Request, res: Response) => {
       return;
     }
 
-    const article = await Article.findById(articleId);
-
-    if (!article) {
-      res.status(StatusCode.NOT_FOUND).json({ message: "Article not found" });
-      return;
-    }
-
-    const alreadyDisLiked = article.dis_likes.includes(userId);
-
-    let updatedArticle;
-
-    if (alreadyDisLiked) {
-      updatedArticle = await Article.findByIdAndUpdate(
-        articleId,
-        { $pull: { dis_likes: userId } },
-        { new: true }
-      );
-    } else {
-      updatedArticle = await Article.findByIdAndUpdate(
-        articleId,
-        { $addToSet: { dis_likes: userId }, $pull: { likes: userId } },
-        { new: true }
-      );
-    }
+    const { updatedArticle, alreadyDisliked } =
+      await _dislikeOrUndislikeArticle(articleId, userId);
 
     res.status(StatusCode.OK).json({
-      message: alreadyDisLiked ? "Article disliked" : "Article unDisliked",
+      message: alreadyDisliked ? "Article disliked" : "Article undisliked",
       data: updatedArticle,
     });
   } catch (error: any) {
-    console.error("Error in disLikeArticle controller:", error.message);
+    console.error("Error in disLikeArticleController:", error.message);
     res
       .status(StatusCode.INTERNAL_SERVER_ERROR)
-      .json({ message: "Server Error! Try later." });
+      .json({ message: error.message || "Server Error! Try later." });
   }
 };
 
-export const getUserArticles = async (req: Request, res: Response) => {
+export const getUserArticles: IArticleController["getUserArticles"] = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const userId = req.params.userId;
 
@@ -208,37 +161,29 @@ export const getUserArticles = async (req: Request, res: Response) => {
       return;
     }
 
-    const articleData = await Article.find({ author: userId });
+    const articleData = await _getUserArticlesService(userId);
 
     res.status(StatusCode.OK).json({
       message: "Article Data Fetched Successfully",
       data: articleData,
     });
   } catch (error: any) {
-    console.error("Error in getUserArticles controller:", error.message);
+    console.error("Error in getUserArticlesController:", error.message);
     res
       .status(StatusCode.INTERNAL_SERVER_ERROR)
       .json({ message: "Server Error! Try later." });
   }
 };
 
-export const editArticle = async (req: Request, res: Response) => {
+export const editArticle: IArticleController["editArticle"] = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const articleId = req.params.articleId;
     const { userId, updated } = req.body;
-    const { title, category, description, tags, image } = updated;
 
-    const article = await Article.findOneAndUpdate(
-      { _id: articleId, author: userId },
-      {
-        title,
-        category,
-        description,
-        tags,
-        coverImage: image,
-      },
-      { new: true }
-    );
+    const article = await _editArticleService(articleId, userId, updated);
 
     if (!article) {
       res.status(StatusCode.NOT_FOUND).json({
@@ -254,7 +199,7 @@ export const editArticle = async (req: Request, res: Response) => {
       data: article,
     });
   } catch (error: any) {
-    console.log(error.message, "Error in editArticle controller");
+    console.error("Error in editArticleController:", error.message);
     res.status(StatusCode.INTERNAL_SERVER_ERROR).json({
       status: false,
       message: "Something went wrong while updating the article",
@@ -262,13 +207,16 @@ export const editArticle = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteArticle = async (req: Request, res: Response) => {
+export const deleteArticle: IArticleController["deleteArticle"] = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const articleId = req.params.articleId;
 
-    const article = await Article.deleteOne({ _id: articleId });
+    const result = await _deleteArticleService(articleId);
 
-    if (!article) {
+    if (result.deletedCount === 0) {
       res.status(StatusCode.NOT_FOUND).json({
         status: false,
         message: "Article not found or you're not authorized",
@@ -278,14 +226,13 @@ export const deleteArticle = async (req: Request, res: Response) => {
 
     res.status(StatusCode.OK).json({
       status: true,
-      message: "Article Deleted successfully",
-      data: article,
+      message: "Article deleted successfully",
     });
   } catch (error: any) {
-    console.log(error.message, "Error in deleteArticle controller");
+    console.error("Error in deleteArticleController:", error.message);
     res.status(StatusCode.INTERNAL_SERVER_ERROR).json({
       status: false,
-      message: "Something went wrong while updating the article",
+      message: "Something went wrong while deleting the article",
     });
   }
 };

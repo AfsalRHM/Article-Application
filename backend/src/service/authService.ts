@@ -1,68 +1,41 @@
-import User from "../models/userModel";
+import bcrypt from "bcryptjs";
+import { UserData } from "../interfaces/userInterface";
+import {
+  findUserByEmail,
+  findUserByIdentifier,
+  createUser,
+} from "../repositories/authRepository";
 
-type userDataType = {
-  first_name: string;
-  last_name: string;
-  phone_number: string;
-  email: string;
-  dob: string;
-  password: string;
-  preferences: string[];
+import { IAuthService } from "./interfaces/IauthService";
+
+const mapUserDocumentToUserData = (doc: any): UserData => {
+  const obj = typeof doc.toObject === "function" ? doc.toObject() : doc;
+  return {
+    ...obj,
+    _id: obj._id.toString(),
+  };
 };
 
-export const checkMailDuplicate = async ({ email }: { email: string }) => {
-  try {
-    const checkDuplicate = await User.findOne({ email: email });
-    return checkDuplicate;
-  } catch (error: any) {
-    console.log(error.message, "Error on the checkMailDuplicate");
-  }
+export const isEmailTaken: IAuthService["isEmailTaken"] = async (
+  email: string
+) => {
+  const userDoc = await findUserByEmail(email);
+  return userDoc ? mapUserDocumentToUserData(userDoc) : null;
 };
 
-export const insertUser = async ({
-  first_name,
-  last_name,
-  email,
-  phone_number,
-  dob,
-  password,
-  preferences,
-}: {
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone_number: string;
-  dob: string;
-  password: string;
-  preferences: string;
-}) => {
-  try {
-    const userData = await User.insertOne({
-      first_name,
-      last_name,
-      email,
-      phone_number,
-      dob,
-      password,
-      preferences,
-    });
-    return userData;
-  } catch (error: any) {
-    console.log(error.message, "Error on the insertUser");
-  }
+export const registerUser: IAuthService["registerUser"] = async (user) => {
+  const hashedPassword = bcrypt.hashSync(user.password, 10);
+  const userDoc = await createUser({ ...user, password: hashedPassword });
+  return mapUserDocumentToUserData(userDoc);
 };
 
-export const findUser = async ({
+export const loginUser: IAuthService["loginUser"] = async (
   identifier,
-}: {
-  identifier: string | number;
-}) => {
-  try {
-    const existingUser: userDataType | null | undefined = await User.findOne({
-      $or: [{ email: identifier }, { phone_number: identifier }],
-    }).lean();
-    return existingUser;
-  } catch (error: any) {
-    console.log(error.message, "Error on the findUser");
-  }
+  password
+) => {
+  const userDoc = await findUserByIdentifier(identifier);
+  if (!userDoc) return null;
+
+  const isValidPassword = bcrypt.compareSync(password, userDoc.password);
+  return isValidPassword ? mapUserDocumentToUserData(userDoc) : null;
 };
